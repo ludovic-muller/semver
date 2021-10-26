@@ -1,5 +1,6 @@
 pub mod semver;
 
 fn main() {
-    semver::semver("v1.2.3", true);
+    let v = semver::parse("v1.2.3");
+    v.print(true);
 }
