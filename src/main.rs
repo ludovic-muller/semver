@@ -1,8 +1,11 @@
 pub mod semver;
 
 fn main() -> anyhow::Result<()> {
-    let v = semver::parse("v1.2.3")?;
-    v.print(true);
+    println!("Classic semver parse:");
+    semver::parse("v1.2.3")?.print(true);
+
+    println!("\nSpecial semver parse:");
+    semver::parse("v1.2.3-alpha")?.print(true);
 
     Ok(())
 }

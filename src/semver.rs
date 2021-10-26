@@ -18,9 +18,20 @@ impl Semver {
             prefix = "v";
         }
 
-        println!("{}{}", prefix, &self.major);
-        println!("{}{}.{}", prefix, &self.major, &self.minor);
-        println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+        if self.is_special() {
+            println!(
+                "{}{}.{}.{}-{}",
+                prefix, &self.major, &self.minor, &self.patch, &self.prerelease
+            );
+        } else {
+            println!("{}{}", prefix, &self.major);
+            println!("{}{}.{}", prefix, &self.major, &self.minor);
+            println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+        }
+    }
+
+    pub fn is_special(&self) -> bool {
+        !&self.prerelease.is_empty()
     }
 }
 
