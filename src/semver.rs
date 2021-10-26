@@ -6,6 +6,8 @@ pub struct Semver {
     major: String,
     minor: String,
     patch: String,
+    prerelease: String,
+    buildmetadata: String,
 }
 
 impl Semver {
@@ -25,24 +27,39 @@ impl Semver {
 pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let re = Regex::new(
         r"^(?x)v?
-(?P<major>0|[1-9]\d*)  # major
-\.
-(?P<minor>0|[1-9]\d*)  # minor
-\.
-(?P<patch>0|[1-9]\d*)  # patch
-$",
+            (?P<major>0|[1-9]\d*)  # major
+            \.
+            (?P<minor>0|[1-9]\d*)  # minor
+            \.
+            (?P<patch>0|[1-9]\d*)  # patch
+            (?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
+            (?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
+        $",
     )?;
 
     let caps = re.captures(version).context("invalid semver")?;
 
+    // required fields
     let major = caps["major"].to_string();
     let minor = caps["minor"].to_string();
     let patch = caps["patch"].to_string();
+
+    // optional fields
+    let prerelease = caps
+        .name("prerelease")
+        .map_or("", |m| m.as_str())
+        .to_string();
+    let buildmetadata = caps
+        .name("buildmetadata")
+        .map_or("", |m| m.as_str())
+        .to_string();
 
     Ok(Semver {
         major,
         minor,
         patch,
+        prerelease,
+        buildmetadata,
     })
 }
 
@@ -57,6 +74,8 @@ mod tests {
         assert_eq!(v.major, "1");
         assert_eq!(v.minor, "2");
         assert_eq!(v.patch, "3");
+        assert_eq!(v.prerelease, "");
+        assert_eq!(v.buildmetadata, "");
 
         Ok(())
     }
@@ -68,6 +87,34 @@ mod tests {
         assert_eq!(v.major, "1");
         assert_eq!(v.minor, "2");
         assert_eq!(v.patch, "3");
+        assert_eq!(v.prerelease, "");
+        assert_eq!(v.buildmetadata, "");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_meta_parse() -> anyhow::Result<()> {
+        let v = parse("1.2.3-alpha+meta")?;
+
+        assert_eq!(v.major, "1");
+        assert_eq!(v.minor, "2");
+        assert_eq!(v.patch, "3");
+        assert_eq!(v.prerelease, "alpha");
+        assert_eq!(v.buildmetadata, "meta");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_prefix_meta_parse() -> anyhow::Result<()> {
+        let v = parse("v1.2.3-alpha+meta")?;
+
+        assert_eq!(v.major, "1");
+        assert_eq!(v.minor, "2");
+        assert_eq!(v.patch, "3");
+        assert_eq!(v.prerelease, "alpha");
+        assert_eq!(v.buildmetadata, "meta");
 
         Ok(())
     }
@@ -77,34 +124,34 @@ mod tests {
         assert!(parse("0.0.4").is_ok());
         assert!(parse("1.2.3").is_ok());
         assert!(parse("10.20.30").is_ok());
-        // assert!(parse("1.1.2-prerelease+meta").is_ok());
-        // assert!(parse("1.1.2+meta").is_ok());
-        // assert!(parse("1.1.2+meta-valid").is_ok());
-        // assert!(parse("1.0.0-alpha").is_ok());
-        // assert!(parse("1.0.0-beta").is_ok());
-        // assert!(parse("1.0.0-alpha.beta").is_ok());
-        // assert!(parse("1.0.0-alpha.beta.1").is_ok());
-        // assert!(parse("1.0.0-alpha.1").is_ok());
-        // assert!(parse("1.0.0-alpha0.valid").is_ok());
-        // assert!(parse("1.0.0-alpha.0valid").is_ok());
-        // assert!(parse("1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay").is_ok());
-        // assert!(parse("1.0.0-rc.1+build.1").is_ok());
-        // assert!(parse("2.0.0-rc.1+build.123").is_ok());
-        // assert!(parse("1.2.3-beta").is_ok());
-        // assert!(parse("10.2.3-DEV-SNAPSHOT").is_ok());
-        // assert!(parse("1.2.3-SNAPSHOT-123").is_ok());
+        assert!(parse("1.1.2-prerelease+meta").is_ok());
+        assert!(parse("1.1.2+meta").is_ok());
+        assert!(parse("1.1.2+meta-valid").is_ok());
+        assert!(parse("1.0.0-alpha").is_ok());
+        assert!(parse("1.0.0-beta").is_ok());
+        assert!(parse("1.0.0-alpha.beta").is_ok());
+        assert!(parse("1.0.0-alpha.beta.1").is_ok());
+        assert!(parse("1.0.0-alpha.1").is_ok());
+        assert!(parse("1.0.0-alpha0.valid").is_ok());
+        assert!(parse("1.0.0-alpha.0valid").is_ok());
+        assert!(parse("1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay").is_ok());
+        assert!(parse("1.0.0-rc.1+build.1").is_ok());
+        assert!(parse("2.0.0-rc.1+build.123").is_ok());
+        assert!(parse("1.2.3-beta").is_ok());
+        assert!(parse("10.2.3-DEV-SNAPSHOT").is_ok());
+        assert!(parse("1.2.3-SNAPSHOT-123").is_ok());
         assert!(parse("1.0.0").is_ok());
         assert!(parse("2.0.0").is_ok());
         assert!(parse("1.1.7").is_ok());
-        // assert!(parse("2.0.0+build.1848").is_ok());
-        // assert!(parse("2.0.1-alpha.1227").is_ok());
-        // assert!(parse("1.0.0-alpha+beta").is_ok());
-        // assert!(parse("1.2.3----RC-SNAPSHOT.12.9.1--.12+788").is_ok());
-        // assert!(parse("1.2.3----R-S.12.9.1--.12+meta").is_ok());
-        // assert!(parse("1.2.3----RC-SNAPSHOT.12.9.1--.12").is_ok());
-        // assert!(parse("1.0.0+0.build.1-rc.10000aaa-kk-0.1").is_ok());
-        // assert!(parse("99999999999999999999999.999999999999999999.99999999999999999").is_ok());
-        // assert!(parse("1.0.0-0A.is.legal").is_ok());
+        assert!(parse("2.0.0+build.1848").is_ok());
+        assert!(parse("2.0.1-alpha.1227").is_ok());
+        assert!(parse("1.0.0-alpha+beta").is_ok());
+        assert!(parse("1.2.3----RC-SNAPSHOT.12.9.1--.12+788").is_ok());
+        assert!(parse("1.2.3----R-S.12.9.1--.12+meta").is_ok());
+        assert!(parse("1.2.3----RC-SNAPSHOT.12.9.1--.12").is_ok());
+        assert!(parse("1.0.0+0.build.1-rc.10000aaa-kk-0.1").is_ok());
+        assert!(parse("99999999999999999999999.999999999999999999.99999999999999999").is_ok());
+        assert!(parse("1.0.0-0A.is.legal").is_ok());
     }
 
     #[test]
