@@ -25,11 +25,11 @@ impl Semver {
 pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let re = Regex::new(
         r"^(?x)v?
-(?P<major>(0|[1-9]\d*))  # major
+(?P<major>0|[1-9]\d*)  # major
 \.
-(?P<minor>(0|[1-9]\d*))  # minor
+(?P<minor>0|[1-9]\d*)  # minor
 \.
-(?P<patch>(0|[1-9]\d*))  # patch
+(?P<patch>0|[1-9]\d*)  # patch
 $",
     )?;
 
