@@ -1,7 +1,21 @@
+use anyhow::Context;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::str::FromStr;
 
-use anyhow::Context;
-use regex::Regex;
+lazy_static! {
+    static ref RE: Regex = Regex::new(
+        r"^(?x)v?
+            (?P<major>0|[1-9]\d*)  # major
+            \.
+            (?P<minor>0|[1-9]\d*)  # minor
+            \.
+            (?P<patch>0|[1-9]\d*)  # patch
+            (?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
+            (?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
+        $",
+    ).unwrap();
+}
 
 #[derive(Debug, Default, Clone, Eq)]
 pub struct Semver {
@@ -113,19 +127,7 @@ impl FromStr for Semver {
 }
 
 pub fn parse(version: &str) -> anyhow::Result<Semver> {
-    let re = Regex::new(
-        r"^(?x)v?
-            (?P<major>0|[1-9]\d*)  # major
-            \.
-            (?P<minor>0|[1-9]\d*)  # minor
-            \.
-            (?P<patch>0|[1-9]\d*)  # patch
-            (?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?
-            (?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?
-        $",
-    )?;
-
-    let caps = re.captures(version).context("invalid semver")?;
+    let caps = RE.captures(version).context("invalid semver")?;
 
     // required fields
     let major: u128 = caps["major"].parse()?;
