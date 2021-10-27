@@ -1,10 +1,9 @@
 use clap::Parser;
 
-pub mod cmd;
-pub mod semver;
+use semver::{cmd, parse};
 
 fn main() -> anyhow::Result<()> {
     let opts = cmd::Semver::parse();
-    semver::parse(&opts.version)?.print(opts);
+    parse(&opts.version)?.print(opts);
     Ok(())
 }

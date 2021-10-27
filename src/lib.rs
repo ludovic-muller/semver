@@ -1,7 +1,7 @@
 use anyhow::Context;
 use regex::Regex;
 
-use crate::cmd;
+pub mod cmd;
 
 #[derive(Debug)]
 pub struct Semver {
