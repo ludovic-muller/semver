@@ -72,42 +72,60 @@ impl Semver {
         }
 
         if opts.single_line {
-            self.print_single_line(prefix);
+            println!("{}", self.single_line(prefix));
         } else {
-            self.print_multiple_lines(prefix);
+            println!("{}", self.multiple_lines(prefix));
         }
     }
 
-    /// Print versions on a sigle line
-    pub fn print_single_line(&self, prefix: String) {
+    /// Get versions on a sigle line
+    pub fn single_line(&self, prefix: String) -> String {
         match &self.prerelease {
             Some(prerelease) => {
-                println!(
+                format!(
                     "{}{}.{}.{}-{}",
                     prefix, &self.major, &self.minor, &self.patch, &prerelease
-                );
+                )
             }
             None => {
-                print!("{}{},", prefix, &self.major);
-                print!("{}{}.{},", prefix, &self.major, &self.minor);
-                println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+                format!(
+                    "{}{},{}{}.{},{}{}.{}.{}",
+                    prefix,
+                    &self.major,
+                    prefix,
+                    &self.major,
+                    &self.minor,
+                    prefix,
+                    &self.major,
+                    &self.minor,
+                    &self.patch
+                )
             }
         }
     }
 
-    /// Print versions on multiple lines
-    pub fn print_multiple_lines(&self, prefix: String) {
+    /// Get versions on multiple lines
+    pub fn multiple_lines(&self, prefix: String) -> String {
         match &self.prerelease {
             Some(prerelease) => {
-                println!(
+                format!(
                     "{}{}.{}.{}-{}",
                     prefix, &self.major, &self.minor, &self.patch, &prerelease
-                );
+                )
             }
             None => {
-                println!("{}{}", prefix, &self.major);
-                println!("{}{}.{}", prefix, &self.major, &self.minor);
-                println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+                format!(
+                    "{}{},\n{}{}.{},\n{}{}.{}.{}",
+                    prefix,
+                    &self.major,
+                    prefix,
+                    &self.major,
+                    &self.minor,
+                    prefix,
+                    &self.major,
+                    &self.minor,
+                    &self.patch
+                )
             }
         }
     }
