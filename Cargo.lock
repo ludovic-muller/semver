@@ -196,8 +196,16 @@ name = "semver"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "clap",
  "regex",
+]
+
+[[package]]
+name = "semver-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "semver",
 ]
 
 [[package]]

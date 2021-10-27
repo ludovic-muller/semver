@@ -1,8 +1,6 @@
 use anyhow::Context;
 use regex::Regex;
 
-pub mod cmd;
-
 #[derive(Debug)]
 pub struct Semver {
     major: u128,
@@ -12,9 +10,16 @@ pub struct Semver {
     buildmetadata: Option<String>,
 }
 
+#[derive(Debug)]
+pub struct DisplayOptions {
+    pub prefix: String,
+    pub remove_v_prefix: bool,
+    pub single_line: bool,
+}
+
 impl Semver {
     /// Print all requested versions
-    pub fn print(&self, opts: cmd::Semver) {
+    pub fn print(&self, opts: DisplayOptions) {
         let mut prefix = opts.prefix;
 
         if !opts.remove_v_prefix {
