@@ -1,3 +1,2 @@
 [workspace]
 members = ["semver", "semver-cli"]
-default-members = ["semver-cli"]
