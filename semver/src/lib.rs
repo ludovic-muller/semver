@@ -1,13 +1,23 @@
 use anyhow::Context;
 use regex::Regex;
 
-#[derive(Debug)]
+#[derive(Debug, Default, Clone, Eq)]
 pub struct Semver {
     major: u128,
     minor: u128,
     patch: u128,
     prerelease: Option<String>,
     buildmetadata: Option<String>,
+}
+
+impl PartialEq for Semver {
+    fn eq(&self, other: &Self) -> bool {
+        self.major == other.major
+            && self.minor == other.minor
+            && self.patch == other.patch
+            && self.prerelease.as_deref() == other.prerelease.as_deref()
+            && self.buildmetadata.as_deref() == other.buildmetadata.as_deref()
+    }
 }
 
 #[derive(Debug)]
@@ -109,6 +119,27 @@ pub fn parse(version: &str) -> anyhow::Result<Semver> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_eq() -> anyhow::Result<()> {
+        let v1 = parse("1.2.3")?;
+        let v2 = parse("1.2.3")?;
+        let v3 = parse("1.2.4")?;
+        let v4 = parse("1.2.4-test")?;
+        let v5 = parse("1.2.4-test+meta")?;
+        let v6 = parse("1.2.4-test+meta")?;
+        let v7 = parse("1.2.4-test+meta2")?;
+
+        assert_eq!(v1, v2);
+        assert_ne!(v1, v3);
+        assert_ne!(v2, v3);
+        assert_ne!(v3, v4);
+        assert_eq!(v5, v6);
+        assert_ne!(v6, v7);
+        assert_ne!(v7, v1);
+
+        Ok(())
+    }
 
     #[test]
     fn test_parse() -> anyhow::Result<()> {
