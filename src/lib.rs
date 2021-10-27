@@ -8,8 +8,8 @@ pub struct Semver {
     major: u32,
     minor: u32,
     patch: u32,
-    prerelease: String,
-    buildmetadata: String,
+    prerelease: Option<String>,
+    buildmetadata: Option<String>,
 }
 
 impl Semver {
@@ -30,35 +30,41 @@ impl Semver {
 
     /// Print versions on a sigle line
     pub fn print_single_line(&self, prefix: String) {
-        if self.is_prerelease() {
-            println!(
-                "{}{}.{}.{}-{}",
-                prefix, &self.major, &self.minor, &self.patch, &self.prerelease
-            );
-        } else {
-            print!("{}{},", prefix, &self.major);
-            print!("{}{}.{},", prefix, &self.major, &self.minor);
-            println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+        match &self.prerelease {
+            Some(prerelease) => {
+                println!(
+                    "{}{}.{}.{}-{}",
+                    prefix, &self.major, &self.minor, &self.patch, &prerelease
+                );
+            }
+            None => {
+                print!("{}{},", prefix, &self.major);
+                print!("{}{}.{},", prefix, &self.major, &self.minor);
+                println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+            }
         }
     }
 
     /// Print versions on multiple lines
     pub fn print_multiple_lines(&self, prefix: String) {
-        if self.is_prerelease() {
-            println!(
-                "{}{}.{}.{}-{}",
-                prefix, &self.major, &self.minor, &self.patch, &self.prerelease
-            );
-        } else {
-            println!("{}{}", prefix, &self.major);
-            println!("{}{}.{}", prefix, &self.major, &self.minor);
-            println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+        match &self.prerelease {
+            Some(prerelease) => {
+                println!(
+                    "{}{}.{}.{}-{}",
+                    prefix, &self.major, &self.minor, &self.patch, &prerelease
+                );
+            }
+            None => {
+                println!("{}{}", prefix, &self.major);
+                println!("{}{}.{}", prefix, &self.major, &self.minor);
+                println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+            }
         }
     }
 
     /// Check if it is a prerelease version
     pub fn is_prerelease(&self) -> bool {
-        !&self.prerelease.is_empty()
+        self.prerelease.is_some()
     }
 }
 
@@ -83,14 +89,8 @@ pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let patch: u32 = caps["patch"].parse()?;
 
     // optional fields
-    let prerelease = caps
-        .name("prerelease")
-        .map_or("", |m| m.as_str())
-        .to_string();
-    let buildmetadata = caps
-        .name("buildmetadata")
-        .map_or("", |m| m.as_str())
-        .to_string();
+    let prerelease = caps.name("prerelease").map(|m| m.as_str().to_string());
+    let buildmetadata = caps.name("buildmetadata").map(|m| m.as_str().to_string());
 
     Ok(Semver {
         major,
@@ -112,8 +112,8 @@ mod tests {
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 2);
         assert_eq!(v.patch, 3);
-        assert_eq!(v.prerelease, "");
-        assert_eq!(v.buildmetadata, "");
+        assert_eq!(v.prerelease, None);
+        assert_eq!(v.buildmetadata, None);
 
         Ok(())
     }
@@ -125,8 +125,8 @@ mod tests {
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 2);
         assert_eq!(v.patch, 3);
-        assert_eq!(v.prerelease, "");
-        assert_eq!(v.buildmetadata, "");
+        assert_eq!(v.prerelease, None);
+        assert_eq!(v.buildmetadata, None);
 
         Ok(())
     }
@@ -138,8 +138,8 @@ mod tests {
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 2);
         assert_eq!(v.patch, 3);
-        assert_eq!(v.prerelease, "alpha");
-        assert_eq!(v.buildmetadata, "meta");
+        assert_eq!(v.prerelease, Some(String::from("alpha")));
+        assert_eq!(v.buildmetadata, Some(String::from("meta")));
 
         Ok(())
     }
@@ -151,8 +151,8 @@ mod tests {
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 2);
         assert_eq!(v.patch, 3);
-        assert_eq!(v.prerelease, "alpha");
-        assert_eq!(v.buildmetadata, "meta");
+        assert_eq!(v.prerelease, Some(String::from("alpha")));
+        assert_eq!(v.buildmetadata, Some(String::from("meta")));
 
         Ok(())
     }
