@@ -8,6 +8,7 @@ pub struct Semver {
     #[clap(short, long)]
     pub remove_v_prefix: bool,
 
+    /// Use a custom prefix
     #[clap(short, long, default_value = "")]
     pub prefix: String,
 

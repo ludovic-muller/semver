@@ -1,6 +1,8 @@
 use anyhow::Context;
 use regex::Regex;
 
+use crate::cmd;
+
 #[derive(Debug)]
 pub struct Semver {
     major: String,
@@ -11,14 +13,15 @@ pub struct Semver {
 }
 
 impl Semver {
-    pub fn print(&self, prefix: String, print_v_prefix: bool) {
-        let mut prefix = prefix;
+    /// Print all requested versions
+    pub fn print(&self, opts: cmd::Semver) {
+        let mut prefix = opts.prefix;
 
-        if print_v_prefix {
+        if !opts.remove_v_prefix {
             prefix.push('v');
         }
 
-        if self.is_special() {
+        if self.is_prerelease() {
             println!(
                 "{}{}.{}.{}-{}",
                 prefix, &self.major, &self.minor, &self.patch, &self.prerelease
@@ -30,7 +33,8 @@ impl Semver {
         }
     }
 
-    pub fn is_special(&self) -> bool {
+    /// Check if it is a prerelease version
+    pub fn is_prerelease(&self) -> bool {
         !&self.prerelease.is_empty()
     }
 }
