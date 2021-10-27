@@ -20,6 +20,25 @@ impl PartialEq for Semver {
     }
 }
 
+impl PartialOrd for Semver {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        match (self.major, self.minor, self.patch).cmp(&(other.major, other.minor, other.patch)) {
+            std::cmp::Ordering::Equal => {}
+            ord => return Some(ord),
+        }
+
+        // if prerelease or buildmetadata are different, they are not comparable
+        match self.prerelease.partial_cmp(&other.prerelease) {
+            Some(core::cmp::Ordering::Equal) => {}
+            _ord => return None,
+        }
+        match self.buildmetadata.partial_cmp(&other.buildmetadata) {
+            Some(core::cmp::Ordering::Equal) => Some(core::cmp::Ordering::Equal),
+            _ord => None,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct DisplayOptions {
     pub prefix: String,
@@ -137,6 +156,44 @@ mod tests {
         assert_eq!(v5, v6);
         assert_ne!(v6, v7);
         assert_ne!(v7, v1);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_ord() -> anyhow::Result<()> {
+        let v1 = parse("1.2.3")?;
+        let v2 = parse("1.2.4")?;
+        let v3 = parse("1.2.4")?;
+        let v4 = parse("1.3.3")?;
+        let v5 = parse("2.3.3")?;
+        let v6 = parse("1.2.3-alpha")?;
+        let v7 = parse("1.2.3-alpha")?;
+        let v8 = parse("1.2.3-beta")?;
+
+        assert!(v1 < v2);
+        assert!(v2 > v1);
+        assert!(v1 <= v2);
+        assert!(v2 >= v1);
+        assert!(v2 <= v3);
+        assert!(v2 >= v3);
+        assert!(v2 == v3);
+        assert!(v1 != v2);
+        assert!(v1 < v4);
+        assert!(v1 <= v4);
+        assert!(v3 < v4);
+        assert!(v3 <= v4);
+        assert!(v4 < v5);
+        assert!(v5 > v4);
+        assert!(v4 <= v5);
+        assert!(v5 >= v4);
+        assert!(v3 < v5);
+        assert!(v5 > v3);
+        assert!(v3 <= v5);
+        assert!(v5 >= v3);
+        assert!(v6 <= v7);
+        assert!(v6 >= v7);
+        assert!(v7.partial_cmp(&v8).is_none());
 
         Ok(())
     }
