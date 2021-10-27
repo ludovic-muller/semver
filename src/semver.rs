@@ -12,10 +12,10 @@ pub struct Semver {
 
 impl Semver {
     pub fn print(&self, print_v_prefix: bool) {
-        let mut prefix = "";
+        let mut prefix = String::from("");
 
         if print_v_prefix {
-            prefix = "v";
+            prefix.push('v');
         }
 
         if self.is_special() {
