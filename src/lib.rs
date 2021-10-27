@@ -5,9 +5,9 @@ pub mod cmd;
 
 #[derive(Debug)]
 pub struct Semver {
-    major: u32,
-    minor: u32,
-    patch: u32,
+    major: u128,
+    minor: u128,
+    patch: u128,
     prerelease: Option<String>,
     buildmetadata: Option<String>,
 }
@@ -84,9 +84,9 @@ pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let caps = re.captures(version).context("invalid semver")?;
 
     // required fields
-    let major: u32 = caps["major"].parse()?;
-    let minor: u32 = caps["minor"].parse()?;
-    let patch: u32 = caps["patch"].parse()?;
+    let major: u128 = caps["major"].parse()?;
+    let minor: u128 = caps["minor"].parse()?;
+    let patch: u128 = caps["patch"].parse()?;
 
     // optional fields
     let prerelease = caps.name("prerelease").map(|m| m.as_str().to_string());
