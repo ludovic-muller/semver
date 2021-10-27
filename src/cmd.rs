@@ -12,6 +12,10 @@ pub struct Semver {
     #[clap(short, long, default_value = "")]
     pub prefix: String,
 
+    /// Display output in a single line
+    #[clap(short, long)]
+    pub single_line: bool,
+
     /// Version to be parsed
     pub version: String,
 }

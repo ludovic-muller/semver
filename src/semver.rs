@@ -21,6 +21,29 @@ impl Semver {
             prefix.push('v');
         }
 
+        if opts.single_line {
+            self.print_single_line(prefix);
+        } else {
+            self.print_multiple_lines(prefix);
+        }
+    }
+
+    /// Print versions on a sigle line
+    pub fn print_single_line(&self, prefix: String) {
+        if self.is_prerelease() {
+            println!(
+                "{}{}.{}.{}-{}",
+                prefix, &self.major, &self.minor, &self.patch, &self.prerelease
+            );
+        } else {
+            print!("{}{},", prefix, &self.major);
+            print!("{}{}.{},", prefix, &self.major, &self.minor);
+            println!("{}{}.{}.{}", prefix, &self.major, &self.minor, &self.patch);
+        }
+    }
+
+    /// Print versions on multiple lines
+    pub fn print_multiple_lines(&self, prefix: String) {
         if self.is_prerelease() {
             println!(
                 "{}{}.{}.{}-{}",
