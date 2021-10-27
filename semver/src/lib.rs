@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use regex::Regex;
 
@@ -102,6 +104,14 @@ impl Semver {
     }
 }
 
+impl FromStr for Semver {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        parse(s)
+    }
+}
+
 pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let re = Regex::new(
         r"^(?x)v?
@@ -138,6 +148,19 @@ pub fn parse(version: &str) -> anyhow::Result<Semver> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_from_str() -> anyhow::Result<()> {
+        let v1 = Semver::from_str("v1.2.3")?;
+        let v2 = Semver::from_str("1.2.3")?;
+        let v3 = parse("v1.2.3")?;
+
+        assert_eq!(v1, v2);
+        assert_eq!(v1, v3);
+        assert_eq!(v2, v3);
+
+        Ok(())
+    }
 
     #[test]
     fn test_eq() -> anyhow::Result<()> {
