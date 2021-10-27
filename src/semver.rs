@@ -11,8 +11,8 @@ pub struct Semver {
 }
 
 impl Semver {
-    pub fn print(&self, print_v_prefix: bool) {
-        let mut prefix = String::from("");
+    pub fn print(&self, prefix: String, print_v_prefix: bool) {
+        let mut prefix = prefix;
 
         if print_v_prefix {
             prefix.push('v');
