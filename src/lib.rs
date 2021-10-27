@@ -5,9 +5,9 @@ pub mod cmd;
 
 #[derive(Debug)]
 pub struct Semver {
-    major: String,
-    minor: String,
-    patch: String,
+    major: u32,
+    minor: u32,
+    patch: u32,
     prerelease: String,
     buildmetadata: String,
 }
@@ -78,9 +78,9 @@ pub fn parse(version: &str) -> anyhow::Result<Semver> {
     let caps = re.captures(version).context("invalid semver")?;
 
     // required fields
-    let major = caps["major"].to_string();
-    let minor = caps["minor"].to_string();
-    let patch = caps["patch"].to_string();
+    let major: u32 = caps["major"].parse()?;
+    let minor: u32 = caps["minor"].parse()?;
+    let patch: u32 = caps["patch"].parse()?;
 
     // optional fields
     let prerelease = caps
@@ -109,9 +109,9 @@ mod tests {
     fn test_parse() -> anyhow::Result<()> {
         let v = parse("1.2.3")?;
 
-        assert_eq!(v.major, "1");
-        assert_eq!(v.minor, "2");
-        assert_eq!(v.patch, "3");
+        assert_eq!(v.major, 1);
+        assert_eq!(v.minor, 2);
+        assert_eq!(v.patch, 3);
         assert_eq!(v.prerelease, "");
         assert_eq!(v.buildmetadata, "");
 
@@ -122,9 +122,9 @@ mod tests {
     fn test_prefix_parse() -> anyhow::Result<()> {
         let v = parse("v1.2.3")?;
 
-        assert_eq!(v.major, "1");
-        assert_eq!(v.minor, "2");
-        assert_eq!(v.patch, "3");
+        assert_eq!(v.major, 1);
+        assert_eq!(v.minor, 2);
+        assert_eq!(v.patch, 3);
         assert_eq!(v.prerelease, "");
         assert_eq!(v.buildmetadata, "");
 
@@ -135,9 +135,9 @@ mod tests {
     fn test_meta_parse() -> anyhow::Result<()> {
         let v = parse("1.2.3-alpha+meta")?;
 
-        assert_eq!(v.major, "1");
-        assert_eq!(v.minor, "2");
-        assert_eq!(v.patch, "3");
+        assert_eq!(v.major, 1);
+        assert_eq!(v.minor, 2);
+        assert_eq!(v.patch, 3);
         assert_eq!(v.prerelease, "alpha");
         assert_eq!(v.buildmetadata, "meta");
 
@@ -148,9 +148,9 @@ mod tests {
     fn test_prefix_meta_parse() -> anyhow::Result<()> {
         let v = parse("v1.2.3-alpha+meta")?;
 
-        assert_eq!(v.major, "1");
-        assert_eq!(v.minor, "2");
-        assert_eq!(v.patch, "3");
+        assert_eq!(v.major, 1);
+        assert_eq!(v.minor, 2);
+        assert_eq!(v.patch, 3);
         assert_eq!(v.prerelease, "alpha");
         assert_eq!(v.buildmetadata, "meta");
 
