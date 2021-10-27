@@ -96,9 +96,9 @@ impl Semver {
         }
     }
 
-    /// Check if it is a prerelease version
-    pub fn is_prerelease(&self) -> bool {
-        self.prerelease.is_some()
+    /// Check if it is comparable with another Semver
+    pub fn is_comparable_with(&self, other: &Self) -> bool {
+        self.partial_cmp(other).is_some()
     }
 }
 
@@ -194,6 +194,11 @@ mod tests {
         assert!(v6 <= v7);
         assert!(v6 >= v7);
         assert!(v7.partial_cmp(&v8).is_none());
+
+        assert!(v1.is_comparable_with(&v2));
+        assert!(v1.is_comparable_with(&v3));
+        assert!(v6.is_comparable_with(&v7));
+        assert!(!v7.is_comparable_with(&v8));
 
         Ok(())
     }
